@@ -19,6 +19,7 @@ package github
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -383,6 +384,7 @@ func (c *client) Throttle(hourlyTokens, burst int) {
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
 func NewClientWithFields(fields logrus.Fields, getToken func() []byte, graphqlEndpoint string, bases ...string) Client {
+	fmt.Errorf("修改的提过了ssl认证-1")
 	return &client{
 		logger: logrus.WithFields(fields).WithField("client", "github"),
 		time:   &standardTime{},
@@ -390,9 +392,13 @@ func NewClientWithFields(fields logrus.Fields, getToken func() []byte, graphqlEn
 			graphqlEndpoint,
 			&http.Client{
 				Timeout:   maxRequestTime,
-				Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)},
+				Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken),Base:&http.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				}},
 			}),
-		client:   &http.Client{Timeout: maxRequestTime},
+		client:   &http.Client{Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},Timeout: maxRequestTime},
 		bases:    bases,
 		getToken: getToken,
 		dry:      false,
@@ -413,6 +419,7 @@ func NewClient(getToken func() []byte, graphqlEndpoint string, bases ...string) 
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
 func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, graphqlEndpoint string, bases ...string) Client {
+	fmt.Errorf("修改的提过了ssl认证-2")
 	return &client{
 		logger: logrus.WithFields(fields).WithField("client", "github"),
 		time:   &standardTime{},
@@ -420,9 +427,13 @@ func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, gra
 			graphqlEndpoint,
 			&http.Client{
 				Timeout:   maxRequestTime,
-				Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)},
+				Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken),Base:&http.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				}},
 			}),
-		client:   &http.Client{Timeout: maxRequestTime},
+		client:   &http.Client{Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},Timeout: maxRequestTime},
 		bases:    bases,
 		getToken: getToken,
 		dry:      true,
